@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:plant_health/ui/cure.dart';
 import 'package:tflite/tflite.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -24,7 +25,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   File _image;
   List _recognitions;
-//  String _model = "";
+  String diseaseName = "";
   bool _busy = false;
 
   Future predictImagePicker() async {
@@ -36,17 +37,6 @@ class _MyAppState extends State<MyApp> {
     });
     recognizeImage(image);
   }
-
-//  Future predictImage(File image) async {
-//    if (image == null) return;
-//
-//    await recognizeImage(image);
-//
-//    setState(() {
-//      _image = image;
-//      _busy = false;
-//    });
-//  }
 
   @override
   void initState() {
@@ -86,6 +76,12 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  handleCure() {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => Cure(diseaseName),
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -102,18 +98,32 @@ class _MyAppState extends State<MyApp> {
       child: Column(
         children: _recognitions != null
             ? _recognitions.map((res) {
-          return Text(
-            "${res["index"]} - ${res["label"]}",
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 20.0,
-              background: Paint()..color = Colors.white,
-            ),
-          );
-        }).toList()
+                diseaseName = res['label'];
+                return Text(
+                  "${res["index"]} - ${res["label"]}",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 20.0,
+                    background: Paint()..color = Colors.white,
+                  ),
+                );
+              }).toList()
             : [],
       ),
     ));
+
+    if (_image != null) {
+      stackChildren.add(Positioned(
+        bottom: 100.0,
+        left: 140.0,
+//        width: size.width,
+        child: RaisedButton(
+          onPressed: handleCure,
+          child: Text('Cure'),
+          color: Colors.blue,
+        ),
+      ));
+    }
 
     if (_busy) {
       stackChildren.add(const Opacity(
@@ -133,7 +143,7 @@ class _MyAppState extends State<MyApp> {
       floatingActionButton: FloatingActionButton(
         onPressed: predictImagePicker,
         tooltip: 'Pick Image',
-        child: Icon(Icons.image),
+        child: Icon(Icons.camera),
       ),
     );
   }
